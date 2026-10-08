@@ -12,44 +12,67 @@ let nextId = 1;
 
 function addTask() {
   const text = input.value;
+
+  if (!text.trim()) {
+    errorEl.hidden = false;
+    return;
+  }
+
   errorEl.hidden = true;
   tasks.push({ id: nextId++, text: text, done: false });
   input.value = "";
   render();
 }
 
+function getActiveTasks() {
+  return tasks.filter((t) => t.done === false);
+}
+
+function getDoneTasks() {
+  return tasks.filter((t) => t.done === true);
+}
+
 function toggleTask(id) {
   const task = tasks.find((t) => t.id === id);
-  task.done = true;
+  task.done = !task.done;
   render();
 }
 
 function deleteTask(id) {
-  tasks.filter((t) => t.id !== id);
+  tasks = tasks.filter((t) => t.id !== id);
   render();
 }
 
 function clearCompleted() {
-  tasks = [];
+  tasks = getActiveTasks();
   render();
 }
 
 function getVisibleTasks() {
-  return tasks;
+  if (currentFilter === 'all') {
+    return tasks;
+  } else if (currentFilter === 'active') {
+    return getActiveTasks();
+  }
+
+  return getDoneTasks();
 }
 
 function updateCounter() {
-  counter.textContent = "Активных задач: " + tasks.length;
+  counter.textContent = "Активных задач: " + getActiveTasks().length;
 }
 
 function render() {
   const visible = getVisibleTasks();
-  for (let i = 1; i <= visible.length; i++) {
+  list.innerHTML = "";
+  debugger;
+
+  for (let i = 0; i < visible.length; i++) {
     const task = visible[i];
     const li = document.createElement("li");
     li.className = "task";
     if (task.done) {
-      li.classList.add("completed");
+      li.classList.add("done");
     }
 
     const span = document.createElement("span");
@@ -66,10 +89,11 @@ function render() {
     li.appendChild(del);
     list.appendChild(li);
   }
+  
   updateCounter();
 }
 
-addBtn.addEventListener("dblclick", addTask);
+addBtn.addEventListener("click", addTask);
 clearBtn.addEventListener("click", clearCompleted);
 
 filterButtons.forEach((btn) => {
@@ -80,5 +104,3 @@ filterButtons.forEach((btn) => {
     render();
   });
 });
-
-render();
